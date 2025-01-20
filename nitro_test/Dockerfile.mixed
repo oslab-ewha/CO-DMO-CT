@@ -1,0 +1,8 @@
+FROM python:3.9
+
+RUN pip install numpy cryptography pandas
+
+COPY bootstrap.sh /bootstrap.sh
+COPY mixed_task.py /mixed_task.py
+
+CMD ["/bootstrap.sh", "/mixed_task.py"]
