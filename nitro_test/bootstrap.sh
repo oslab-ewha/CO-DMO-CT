@@ -1,3 +1,5 @@
 #!/bin/sh
 
-python $*
+sleep 5
+/usr/bin/enclave
+sleep 20

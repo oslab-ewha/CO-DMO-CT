@@ -1,0 +1,15 @@
+# Copyright 2020-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM aws-nitro-enclaves-sdk-c AS builder
+
+WORKDIR /
+COPY . work
+RUN cmake3 -DCMAKE_PREFIX_PATH=/rootfs/usr -DCMAKE_INSTALL_PREFIX=/rootfs/usr -S work -B work/build
+RUN cmake3 --build work/build --target install
+
+FROM scratch AS enclave
+
+COPY --from=builder /rootfs /
+
+CMD ["/usr/bin/enclave"]
