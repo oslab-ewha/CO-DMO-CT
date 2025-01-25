@@ -13,7 +13,6 @@ Two executables included in this project, which can simulate CO-DMO-CT in compar
 - `gasgen`: task generation tool based on CPU and total utilization
 - `gastask`: scheduling scheme generator based on GA
 
-For comparison purposes, our basic simulator supporting dynamic voltage scaling (DVS) and hybrid memory (HM) can be downloaded at https://github.com/oslab-ewha/simrts.
 
 ## Build
 To build `gastask` and `gasgen`, use CMake:
@@ -37,14 +36,9 @@ $ make
 ```
 # ./gastask gastask.conf
 ```
-- scheduling information is generated in <code>task.txt</code>, which can be used as an input to simrts.# Measuring Overhead in TEE Environments via AWS Nitro Enclaves
+- scheduling information is generated in <code>task.txt</code>, which can be used as an input to simrts.
 
-This folder provides a Docker-based setup for measuring the performance overhead of executing workloads
-in a Trusted Execution Environment (TEE) using AWS Nitro Enclaves.
-
-## AWS nitro enclaves
-
-It is recommended to first read [AWS Nitro Enclaves User Guide](https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html).  
+## Build TEE Environments via AWS Nitro Enclaves
 
 ### Setup an EC2 instance to support nitro enclave
 
@@ -54,37 +48,33 @@ It is recommended to first read [AWS Nitro Enclaves User Guide](https://docs.aws
 
 2. Start the EC2 instance.
 
-3. Install the Nitro Enclaves CLI on Linux. Refer to [this guide](https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave-cli-install.html).
+3. Install the Nitro Enclaves CLI and development tools on Linux. 
 
-4. Edit `/etc/nitro_enclaves/allocator.yaml` to ensure the memory size is at least 8GB.
+4. Edit `/etc/nitro_enclaves/allocator.yaml` to ensure the memory size is at least 4GB.
 
-## Measurement Instructions
-1. **Build docker images for a compute bound task and a IO bound task**
-   ```sh
-   docker build -t compute-task -f Dockerfile.com .
-   docker build -t io-task -f Dockerfile.io .
-   ```
+## Build CO-DMO-CT(IIoT on TEE) Platform
+1. **Prepare code for IoT device**
 
-2. **Generate the EIF Images**
-   ```sh
-   nitro-cli build-enclave --docker-uri compute-task --output-file compute.eif
-   nitro-cli build-enclave --docker-uri io-task --output-file io.eif 
-   ```
-
-3. **Run the Enclave**
-   ```sh
-   nitro-cli run-enclave --eif-path compute.eif --cpu-count 2 --memory 8192 --debug-mode
-   ```
-   f successful, the command will output an enclave-id.
-
-4. **Capture Enclave Output**
+   The IoT code will be contained in iot_device.c. The same file will also be used for offloading.  
+   If additional libraries or files are required, modify CMakeLists.txt accordingly.
    
-   Check the enclave's output to verify the execution time for kernel operations and Python commands.
-   To allow time for attaching the console, the Python script includes 10 seconds sleep.
-   Use the enclave-id returned from run-enclave.
+2. **Build CO-DMO-CT enclave server and IIoT emulator**
    ```sh
-   nitro-cli console --enclave-id i-0b6a5c268ef861605-enc1954c4dea4068f5
+   $ mkdir build
+   $ cd build
+   $ cmake ..
    ```
+
+3. **Run the Enclave server**
+   ```sh
+   $ ./enclave_server
+   ```
+   
+4. **Run the IIoT emulator**
+   ```sh
+   $ ./iiot_emulator <server ip> [<task option>]
+   ```
+   If successful, the command will output offloading information.
     
 
 
